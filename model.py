@@ -14,6 +14,7 @@ from sklearn.tree import DecisionTreeClassifier
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -108,7 +109,7 @@ def run_knn_cv(X_train, y_train):
     }
 
     # cv=4 means 4-fold cross-validation, i.e. k = 4
-    grid = GridSearchCV(knn, params, cv=3, scoring= "recall")
+    grid = GridSearchCV(knn, params, cv=3)
     grid.fit(X_train, y_train)
 
     model = grid.best_estimator_
@@ -266,3 +267,7 @@ def rf_feature_importance(rf, train_scaled):
     sns.barplot(data=df, x="feature_importance", y="feature", palette="Blues_d")
     plt.title("What are the most influencial features?")
 
+def run_gb(X_train, y_train):
+    gb = GradientBoostingClassifier(random_state = 123, n_estimators=300, learning_rate=0.003, max_depth=2).fit(X_train, y_train)
+    y_pred = gb.predict(X_train)
+    return gb, y_pred
