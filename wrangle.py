@@ -40,5 +40,6 @@ def prep_flight_data():
     
     else:
         df = pd.read_csv("clean_data.csv")
+        df.drop(columns=["Unnamed: 0"], inplace=True)
 
     return df
