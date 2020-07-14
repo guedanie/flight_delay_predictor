@@ -67,7 +67,7 @@ def min_max_scaler(train,validate, test):
     scaler, train_scaled, validate_scaled, test_scaled = return_values(scaler, train, validate, test)
     return scaler, train_scaled, validate_scaled, test_scaled
 
-def main_modeling_prep(features_for_modeling=[], target_variable=''):
+def main_modeling_prep(modeling = False, features_for_modeling=[], target_variable=''):
     df = wrangle.prep_flight_data()
     df = to_date_time(df)
     df = create_new_features(df)
@@ -80,19 +80,24 @@ def main_modeling_prep(features_for_modeling=[], target_variable=''):
 
     df_modeling = df_modeling.set_index("observation")
 
-    train, validate,test = split_data(df_modeling)
+    if modeling == False:
+        return df_modeling
 
-    X_train = train.drop(columns=target_variable)
-    y_train = train[target_variable]
-    X_validate = validate.drop(columns=target_variable)
-    y_validate = validate[target_variable]
-    X_test = test.drop(columns=target_variable)
-    y_test = test[target_variable]
-    
-    scaler, train_scaled, validate_scaled, test_scaled = min_max_scaler(X_train, X_validate, X_test)
+    else:
+        
+        train, validate,test = split_data(df_modeling)
+
+        X_train = train.drop(columns=target_variable)
+        y_train = train[target_variable]
+        X_validate = validate.drop(columns=target_variable)
+        y_validate = validate[target_variable]
+        X_test = test.drop(columns=target_variable)
+        y_test = test[target_variable]
+        
+        scaler, train_scaled, validate_scaled, test_scaled = min_max_scaler(X_train, X_validate, X_test)
 
 
-    return train_scaled, y_train, validate_scaled, y_validate, test_scaled, y_test
+        return train_scaled, y_train, validate_scaled, y_validate, test_scaled, y_test
 
 
 
