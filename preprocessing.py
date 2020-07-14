@@ -35,6 +35,11 @@ def create_new_features(df):
     df["dest_airport_avg_delay"] = df.groupby("dest").arr_delay.transform("mean")
     df["carrier_avg_delay"] = df.groupby("op_carrier").arr_delay.transform("mean")
     df["observation"] = df.fl_date.astype(str) + "_" + df.op_carrier + "_" + df.op_carrier_fl_num.astype(str)
+    
+    df["crs_dep_time"] = df['crs_dep_time'].astype(str).apply(lambda x: x.zfill(4))
+    df["crs_dep_time"] = pd.to_datetime(df.crs_dep_time, format= "%H%M")
+    df["dep_time_mean_delay"] = df.groupby("crs_dep_time").arr_delay.transform("mean")
+    
     return df
 
 
@@ -84,7 +89,7 @@ def main_modeling_prep(modeling = False, features_for_modeling=[], target_variab
         return df_modeling
 
     else:
-        
+
         train, validate,test = split_data(df_modeling)
 
         X_train = train.drop(columns=target_variable)
