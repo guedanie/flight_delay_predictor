@@ -39,7 +39,7 @@ def create_new_features(df):
     df["crs_dep_time"] = df['crs_dep_time'].astype(str).apply(lambda x: x.zfill(4))
     df["crs_dep_time"] = pd.to_datetime(df.crs_dep_time, format= "%H%M")
     df["dep_time_mean_delay"] = df.groupby("crs_dep_time").arr_delay.transform("mean")
-    
+
     return df
 
 
@@ -72,7 +72,7 @@ def min_max_scaler(train,validate, test):
     scaler, train_scaled, validate_scaled, test_scaled = return_values(scaler, train, validate, test)
     return scaler, train_scaled, validate_scaled, test_scaled
 
-def main_modeling_prep(modeling = False, features_for_modeling=[], target_variable=''):
+def mvp_modeling_prep(modeling = False, features_for_modeling=[], target_variable=''):
     df = wrangle.prep_flight_data()
     df = to_date_time(df)
     df = create_new_features(df)
