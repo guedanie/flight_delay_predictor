@@ -93,7 +93,7 @@ def run_random_forest_cv(X_train, y_train):
 
     return grid, df_result, model
 
-def run_knn_cv(X_train, y_train):
+def run_knn_cv(X_train, y_train, n_neightbors = 8, k = 3):
     '''
     Function to run a knn model. The function creates the model, then uses 
     cross-validation grid search to figure out what the best parameters are. Returns a grid (object
@@ -105,11 +105,11 @@ def run_knn_cv(X_train, y_train):
 
     params = {
         'weights': ["uniform", "distance"],
-        "n_neighbors": range(1,8)
+        "n_neighbors": range(1,n_neightbors)
     }
 
     # cv=4 means 4-fold cross-validation, i.e. k = 4
-    grid = GridSearchCV(knn, params, cv=3)
+    grid = GridSearchCV(knn, params, cv=k)
     grid.fit(X_train, y_train)
 
     model = grid.best_estimator_
