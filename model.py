@@ -105,7 +105,7 @@ def run_knn_cv(X_train, y_train):
 
     params = {
         'weights': ["uniform", "distance"],
-        "n_neighbors": range(1,20)
+        "n_neighbors": range(1,8)
     }
 
     # cv=4 means 4-fold cross-validation, i.e. k = 4
@@ -157,6 +157,30 @@ def accuracy_report(model, y_pred, y_train):
     matrix = pd.DataFrame(confusion_matrix(y_train, y_pred), index = labels, columns = labels)
 
     return accuracy_score, matrix, report
+
+def compare_prediction_results_accuracy(predictions):
+    # How do the different models compare on accuracy?
+    print("Accuracy Scores")
+    print("---------------")
+    for i in range(predictions.shape[1]):
+        report = create_report(predictions.actual, predictions.iloc[:,i])
+        print(f'{predictions.columns[i].title()} = {report.accuracy[0]:.2f}')
+
+def compare_prediction_results_other_metrics(predictions, metric, positive_target):
+    if metric == "recall":
+        # How do the different models compare on recall?
+        print("Recall Scores")
+        print("---------------")
+        for i in range(predictions.shape[1]):
+            report = create_report(predictions.actual, predictions.iloc[:,i])
+            print(f'{predictions.columns[i].title()} = {report[positive_target].loc["recall"]:.2f}')
+    elif metric == "precision":
+        # How do the different models compare on recall?
+        print("Precision Scores")
+        print("---------------")
+        for i in range(predictions.shape[1]):
+            report = create_report(predictions.actual, predictions.iloc[:,i])
+            print(f'{predictions.columns[i].title()} = {report[positive_target].loc["precision"]:.2f}')
 
 
 ############################################################################################################
@@ -267,7 +291,10 @@ def rf_feature_importance(rf, train_scaled):
     sns.barplot(data=df, x="feature_importance", y="feature", palette="Blues_d")
     plt.title("What are the most influencial features?")
 
+
+# Gradient Boosting Classifier
+
 def run_gb(X_train, y_train):
-    gb = GradientBoostingClassifier(random_state = 123, n_estimators=300, learning_rate=0.003, max_depth=2).fit(X_train, y_train)
+    gb = GradientBoostingClassifier(random_state = 123, n_estimators=300, learning_rate=0.003, max_depth=5).fit(X_train, y_train)
     y_pred = gb.predict(X_train)
     return gb, y_pred
