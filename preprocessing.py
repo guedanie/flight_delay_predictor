@@ -92,7 +92,7 @@ def mvp_modeling_prep(modeling = False, features_for_modeling=[], target_variabl
 
     else:
 
-        train, validate,test = split_data(df_modeling)
+        train, validate, test = split_data(df_modeling)
 
         X_train = train.drop(columns=target_variable)
         y_train = train[target_variable]
