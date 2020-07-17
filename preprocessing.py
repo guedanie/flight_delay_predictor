@@ -38,9 +38,10 @@ def create_new_features(df):
     df["carrier_avg_delay"] = df.groupby("op_carrier").arr_delay.transform("mean")
     df["observation"] = df.fl_date.astype(str) + "_" + df.op_carrier + "_" + df.op_carrier_fl_num.astype(str)
     
-    df["crs_dep_time"] = df['crs_dep_time'].astype(str).apply(lambda x: x.zfill(4))
-    df["crs_dep_time"] = pd.to_datetime(df.crs_dep_time, format= "%H%M")
-    df["dep_time_mean_delay"] = df.groupby("crs_dep_time").arr_delay.transform("mean")
+    df["crs_dep_time_dt"] = df['crs_dep_time'].astype(str).apply(lambda x: x.zfill(4))
+    df["crs_dep_time_dt"] = pd.to_datetime(df.crs_dep_time_dt, format= "%H%M")
+    df["dep_time_mean_delay"] = df.groupby("crs_dep_time_dt").arr_delay.transform("mean")
+    
 
     return df
 
@@ -138,7 +139,7 @@ def prep_weather_data():
     # we only wand data for the following cities
     top_airports = ["ATL", "LAX", "ORD", "DFW", "DEN", "JFK", "SFO", "SEA", "LAS", "MCO", "EWR", "CLT", "PHX", "IAH", "MIA"]
     
-    airport_codes = pd.read_csv("https://storage.googleapis.com/kagglesdsdata/datasets%2F626214%2F1116273%2Fairports.csv?GoogleAccessId=gcp-kaggle-com@kaggle-161607.iam.gserviceaccount.com&Expires=1594952131&Signature=CbuLdZR%2B9YkSTVhPslvV67WILvcTGa1EnhtSpZza10YkL2ccV6HIZLkikKrkF%2BEgwFySBM88hZ4Gp9aqZqA5s5BC%2FL7l71dpdyM8PkBWxtmvJkEYuPYxPvzwt2M10q7T4TzK1mFzUUwPz1CtvLcBdx%2F3GJgd5z4nSGepU3SkoalQHJ4JUQ0SpE5liZiCJ2SB%2FTA4fcz62TvAKv21Jwe7oq4q8CnrG6rvSjW5uRDkvKXDc1sXH2WG2CIZYyt%2FKz2B%2BJsi2iZ9AS9dAhbLO8GVOP6EhtIA9%2ForRmxuBStdXY%2BY1lojJaekb9agtbNS5wAIr%2Fkk0LUHmKPxt7b6jTiLtQ%3D%3D")
+    airport_codes = pd.read_csv("airport_codes.csv")
     airport_codes = airport_codes[airport_codes.Country == "United States"]
 
     weather_data = weather_data.merge(airport_codes, how="left", left_on="AirportCode", right_on="ICAO")
@@ -221,7 +222,7 @@ def merge_flight_weather_data():
 
     return merged_df
 
-def weather_modeling_prep(modeling=False, features_for_modeling=[], target_variable=[]):
+def weather_modeling_prep(modeling=False, features_for_modeling=[], target_variable=''):
     merged_df = merge_flight_weather_data()
     merged_df = to_date_time(merged_df)
     merged_df = create_new_features(merged_df)
@@ -229,6 +230,8 @@ def weather_modeling_prep(modeling=False, features_for_modeling=[], target_varia
     
     # add weather features
     merged_df["avg_weather_delay"] = merged_df.groupby("Type").arr_delay.transform("mean")
+    merged_df["type_severity"] = merged_df.Type + "_" + merged_df.Severity
+    merged_df["avg_type_severity"] = merged_df.groupby("type_severity").arr_delay.transform("mean")
 
     if modeling == False:
         return merged_df
