@@ -21,7 +21,8 @@ def prep_flight_data():
         df.is_top = df.is_top.fillna(False)
         df = df[df.is_top]
         df[df.WEATHER_DELAY.isnull()].ARR_DELAY.mean()
-        df.drop(columns = ["Unnamed: 27", "is_top", "CANCELLATION_CODE"], inplace=True)
+        columns_to_drop = ["Unnamed: 27", "is_top", 'CANCELLATION_CODE', 'TAXI_OUT','WHEELS_OFF','WHEELS_ON','TAXI_IN','CANCELLED','DIVERTED','AIR_TIME', 'CRS_ELAPSED_TIME','ACTUAL_ELAPSED_TIME']
+        df.drop(columns = columns_to_drop, inplace=True)
         df = df[df.ARR_DELAY.notnull()]
         df = df[df.DEP_DELAY.notnull()]
         df = df.fillna(0.0)
@@ -43,3 +44,5 @@ def prep_flight_data():
         df.drop(columns=["Unnamed: 0"], inplace=True)
 
     return df
+
+ 
