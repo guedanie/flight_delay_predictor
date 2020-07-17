@@ -117,3 +117,87 @@ def destination_delay_statistical_testing(df):
 #     Time Series     #
 # ------------------- #
 
+def time_of_the_year_delays(df):
+    df.fl_date = pd.to_datetime(df.fl_date)
+    df = df.set_index("fl_date")
+    monthly = df.resample("M").mean()
+
+    plt.figure(figsize=(15,5))
+    sns.lineplot(data=monthly, x=monthly.index, y="arr_delay")
+    plt.title("Does time of year make a difference in avg minutes delayed?")
+    plt.ylabel("Arrival delayed, in minutes")
+    plt.xlabel("Date")
+
+def day_of_the_week_delays(df):
+
+    df = df.reset_index()
+
+    df["day_name"] = df.fl_date.dt.day_name()
+
+    plt.figure(figsize=(15,5))
+    sns.barplot(data=df, x="day_name", y="arr_delay")
+    plt.title("Does the day of the week matter?")
+    plt.ylabel("Arrival delay, in minutes")
+
+def time_of_the_day_delays(df):
+    df["crs_dep_time"] = df['crs_dep_time'].astype(str).apply(lambda x: x.zfill(4))
+
+    df["crs_dep_time"] = pd.to_datetime(df.crs_dep_time, format= "%H%M")
+
+    df.set_index("crs_dep_time").arr_delay.resample("1H").mean().plot.line(figsize=(15,5))
+    plt.title("Are there any hours where delays are more common?")
+    plt.ylabel("Arrival delay, in minutes")
+    plt.xlabel("Dept Time")
+
+def daily_time_of_day_delays(df):
+    # can we look at it by day of the week?
+    df["day_name"] = df.fl_date.dt.day_name()
+
+    fig = plt.figure(figsize=(11,8))
+    days_of_week = df.day_name.unique()
+    for count, day in enumerate(days_of_week):    
+        plt.subplot(5, 2, 1+count)
+        df[df.day_name == day].set_index("crs_dep_time").arr_delay.resample("1H").mean().plot.line()
+        plt.title(day)
+
+        fig.tight_layout()
+
+    plt.show()
+
+def additional_trends(df):
+    df['is_delay'] = df['arr_delay'].apply(lambda x: 'True' if x > 0 else 'False')
+
+    list_of_values = ["distance", "taxi_in", "air_time", "taxi_out", "carrier_delay", "nas_delay", "security_delay", "late_aircraft_delay"]
+
+    f = plt.figure(figsize=(25,20))
+    list_of_values = ["distance", "taxi_in", "air_time", "taxi_out"]
+
+    for count, element in enumerate(list_of_values):
+        f.add_subplot(4,5, count+1)
+        sns.barplot(data=df, x="is_delay", y=element, ci=False)
+
+        plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
+
+# ------------------------- #
+#     Stats Analysis        #
+# ------------------------- #
+
+def anova_test_difference_in_day_of_week(df):
+
+    df["day_name"] = df.fl_date.dt.day_name()
+
+    monday = df[df.day_name == "Monday"].arr_delay
+    tuesday = df[df.day_name == "Tuesday"].arr_delay
+    wed = df[df.day_name == "Wednesday"].arr_delay
+    thur = df[df.day_name == "Thursday"].arr_delay
+    fri = df[df.day_name == "Friday"].arr_delay
+    sat = df[df.day_name == "Saturday"].arr_delay
+    sun = df[df.day_name == "Sunday"].arr_delay
+
+    # ANOVA
+    stat, pvalue = stats.f_oneway(monday, tuesday, wed, thur, fri, sat, sun)
+
+    print(f"p value: {pvalue}")
