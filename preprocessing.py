@@ -158,6 +158,8 @@ def prep_weather_data():
 
     weather_data = weather_data["2018"]
 
+    weather_data.drop(columns=["Unnamed: 0"],inplace=True)
+
     return weather_data
 
 def filter_weather_data(weather_data):
