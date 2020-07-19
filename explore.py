@@ -180,6 +180,21 @@ def additional_trends(df):
     plt.tight_layout()
     plt.show()
 
+def distance_scatterplot(df):
+    plt.figure(figsize=(15,5))
+    sns.scatterplot(data=df, y="arr_delay", x="distance")
+    plt.title("Do longer flights experience more or less delays?")
+    plt.xlabel("Distance")
+    plt.ylabel("Arrival Delays, in minutes")
+
+def distance_boxplot(df):
+    df["distance_bins"] = pd.cut(df.distance, 3, labels=["short_flights", "medium_flights", "long_flights"])
+
+    plt.figure(figsize=(15,5))
+    sns.boxplot(data=df, x="distance_bins", y="arr_delay")
+    plt.title("Does distance affect arrival delays?")
+    plt.ylabel("Arrival delay, in minutes")
+    plt.xlabel("Flight Distance")    
 
 # ------------------------- #
 #     Stats Analysis        #
