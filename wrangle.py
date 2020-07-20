@@ -58,7 +58,7 @@ def prep_flight_data_weather():
     df = df.set_index("fl_datetime")
     df.index = df.index.map(lambda t: t.replace(minute=30))
 
-    features_to_keep = ["fl_date", "op_carrier", "op_carrier_fl_num", "crs_dep_time", "origin", "dest", "dep_delay", "arr_delay", "weather_delay", "Airline"]
+    features_to_keep = ["fl_date", "op_carrier", "op_carrier_fl_num", "crs_dep_time", "origin", "dest", "crs_arr_time", "dep_delay", "arr_delay", "weather_delay", "Airline"]
     df = df[features_to_keep]
     df = df.reset_index()
 
