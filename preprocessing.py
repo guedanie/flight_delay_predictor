@@ -125,6 +125,7 @@ def weather_modeling_prep(modeling=False, features_for_modeling=[], target_varia
     merged_df["avg_type_severity"] = merged_df.groupby("type_severity").arr_delay.transform("mean")
 
     if modeling == False:
+        
         return merged_df
 
     else:
