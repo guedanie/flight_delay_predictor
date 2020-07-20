@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from pprint import pprint 
 import pandas as pd
+import os.path
 
 
 from sklearn.metrics import classification_report
@@ -22,8 +23,9 @@ import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, PowerTransformer
 from sklearn.cluster import KMeans
 
-# import preprocessing_permits as pr
 import numpy as np
+import preprocessing
+import wrangle
 
 ############################################################################################################
 #                                   Cross Validation Modeling                                              #
@@ -109,7 +111,7 @@ def run_knn_cv(X_train, y_train, n_neightbors = 8, k = 3):
     }
 
     # cv=4 means 4-fold cross-validation, i.e. k = 4
-    grid = GridSearchCV(knn, params, cv=k)
+    grid = GridSearchCV(knn, params, cv=k, scoring= "recall")
     grid.fit(X_train, y_train)
 
     model = grid.best_estimator_
@@ -298,3 +300,56 @@ def run_gb(X_train, y_train):
     gb = GradientBoostingClassifier(random_state = 123, n_estimators=300, learning_rate=0.003, max_depth=5).fit(X_train, y_train)
     y_pred = gb.predict(X_train)
     return gb, y_pred
+
+# --------------------------------- #
+#    Individual Airport Model       #
+# --------------------------------- #
+
+def model_airports_individually(features_for_modeling, target_variable):
+
+    if os.path.exists("weather_modeling_scores_test.csv") == False:
+        airline_carriers = ['WN', 'AA', 'AS', 'DL', 'F9', 'NK', 'OO', 'B6', 'UA', '9E', 'EV','YX', 'YV', 'OH', 'MQ', 'VX', 'G4', 'HA']
+        score = pd.DataFrame()
+        features_for_modeling += ["observation"]
+        features_for_modeling += [target_variable]
+        for airline in airline_carriers:
+
+            merged_df = wrangle.merge_flight_weather_data()
+            merged_df = preprocessing.to_date_time(merged_df)
+            merged_df = preprocessing.create_new_features(merged_df)
+            merged_df = preprocessing.create_target_variable(merged_df)
+
+            # add weather features
+            merged_df["avg_weather_delay"] = merged_df.groupby("Type").arr_delay.transform("mean")
+            merged_df["type_severity"] = merged_df.Type + "_" + merged_df.Severity
+            merged_df["avg_type_severity"] = merged_df.groupby("type_severity").arr_delay.transform("mean")
+
+            merged_df = merged_df[(merged_df.op_carrier == airline)]
+
+            merged_df = merged_df[features_for_modeling]
+            merged_df = merged_df.set_index("observation")
+
+            train, validate, test = preprocessing.split_data(merged_df)
+
+            X_train = train.drop(columns=target_variable)
+            y_train = train[target_variable]
+            X_validate = validate.drop(columns=target_variable)
+            y_validate = validate[target_variable]
+            X_test = test.drop(columns=target_variable)
+            y_test = test[target_variable]
+
+            scaler, train_scaled, validate_scaled, test_scaled = preprocessing.min_max_scaler(X_train, X_validate, X_test)
+
+            knn, y_pred = run_knn(train_scaled, y_train, 3)
+            y_pred = knn.predict(test_scaled)
+            report = classification_report(y_test, y_pred, output_dict = True)
+            report = pd.DataFrame.from_dict(report)
+            actual_score = pd.DataFrame({airline: [report.accuracy.values[0], report["True"].loc["recall"]]}, index=["accuracy", "recall"])
+
+            score = pd.concat([score, actual_score], axis=1)
+            
+        return score
+    
+    else:
+        score = pd.read_csv("weather_modeling_scores_test.csv")
+        return score
