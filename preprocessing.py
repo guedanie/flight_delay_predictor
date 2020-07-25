@@ -47,7 +47,7 @@ def create_new_features(df):
 
 
 def create_target_variable(df):
-    df['is_delay'] = df['arr_delay'].apply(lambda x: True if x > 0 else False)
+    df['is_delay'] = df['arr_delay'].apply(lambda x: True if x > 0 else False) 
     return df
 
 def split_data(df_modeling):
